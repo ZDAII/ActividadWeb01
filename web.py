@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib import response
 from urllib.parse import parse_qsl, urlparse
 import html
 
@@ -7,10 +8,16 @@ class WebRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_url = urlparse(self.path)
         query_params = dict(parse_qsl(parsed_url.query))
+        path = parsed_url.path
 
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.end_headers()
+
+        if path.startswith("/proyecto/"):
+            self.handle_proyecto(path, query_params)
+        else:
+            self.handle_default(parsed_url, query_params)
 
         response = self.build_response(parsed_url, query_params)
         self.wfile.write(response.encode("utf-8"))
@@ -36,6 +43,28 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         </body>
         </html>
         """
+    
+    def handle_proyecto(self, path, query_params):
+        partes = path.split("/")
+        proycto = partes[2] if len(partes) > 2 else "desconocido"
+
+        autor = query_params.get("autor", "desconocido")
+
+        proyecto = html.escape(proycto)
+        autor = html.escape(autor)
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        response = f"<h1>Proyecto: {proyecto} Autor: {autor}</h1>"
+        self.wfile.write(response.encode("utf-8"))
+
+    def handle_default(self, parsed_url, query_params):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(response.encode("utf-8"))
+
 
 PORT = 8000
 
