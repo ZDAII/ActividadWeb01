@@ -6,35 +6,64 @@ import html
 
 class WebRequestHandler(BaseHTTPRequestHandler):
 
+    contenido = {
+        "/": """
+        <html>
+            <head><meta charset="UTF-8"><title>Home</title></head>
+            <body>
+                <h1>Home Page</h1>
+                <ul>
+                    <li><a href="/proyecto/web-uno">Proyecto Web Uno</a></li>
+                    <li><a href="/proyecto/web-dos">Proyecto Web Dos</a></li>
+                    <li><a href="/proyecto/web-tres">Proyecto Web Tres</a></li>
+                </ul>
+            </body>
+        </html>
+        """,
+
+        "/proyecto/web-uno": """
+        <html>
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h1>Proyecto: web-uno</h1>
+            </body>
+        </html>
+        """,
+
+        "/proyecto/web-dos": """
+        <html>
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h1>Proyecto: web-dos</h1>
+            </body>
+        </html>
+        """,
+
+        "/proyecto/web-tres": """
+        <html>
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h1>Proyecto: web-tres</h1>
+            </body>
+        </html>
+        """
+    }
+
     def do_GET(self):
         parsed_url = urlparse(self.path)
-        query_params = dict(parse_qsl(parsed_url.query))
         path = parsed_url.path
 
-        if path == "/":
-            try:
-                with open("home.html", "r", encoding="utf-8") as file:
-                    content = file.read()
-
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(content.encode("utf-8"))
-
-            except FileNotFoundError:
-                self.send_response(500)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(b"<h1>500 - home.html no encontrado</h1>")
-
-        elif path.startswith("/proyecto/"):
-            self.handle_proyecto(path, query_params)
-
+        if path in self.contenido:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(self.contenido[path].encode("utf-8"))
         else:
             self.send_response(404)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
             self.wfile.write(b"<h1>404 - Pagina no encontrada</h1>")
+
 
 
     def build_response(self, parsed_url, query_params):
