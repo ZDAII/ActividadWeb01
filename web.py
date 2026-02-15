@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from os import path
 from urllib import response
 from urllib.parse import parse_qsl, urlparse
 import html
@@ -10,17 +11,31 @@ class WebRequestHandler(BaseHTTPRequestHandler):
         query_params = dict(parse_qsl(parsed_url.query))
         path = parsed_url.path
 
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.end_headers()
+        if path == "/":
+            try:
+                with open("home.html", "r", encoding="utf-8") as file:
+                    content = file.read()
 
-        if path.startswith("/proyecto/"):
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(content.encode("utf-8"))
+
+            except FileNotFoundError:
+                self.send_response(500)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(b"<h1>500 - home.html no encontrado</h1>")
+
+        elif path.startswith("/proyecto/"):
             self.handle_proyecto(path, query_params)
-        else:
-            self.handle_default(parsed_url, query_params)
 
-        response = self.build_response(parsed_url, query_params)
-        self.wfile.write(response.encode("utf-8"))
+        else:
+            self.send_response(404)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(b"<h1>404 - Pagina no encontrada</h1>")
+
 
     def build_response(self, parsed_url, query_params):
         safe_headers = html.escape(str(self.headers))
