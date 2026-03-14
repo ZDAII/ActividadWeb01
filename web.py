@@ -115,7 +115,7 @@ PORT = 8000
 if __name__ == "__main__":
     try:
         print(f"Starting server on http://localhost:{PORT}")
-        server = HTTPServer(("localhost", PORT), WebRequestHandler)
+        server = HTTPServer(("0.0.0.0", PORT), WebRequestHandler)
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nShutting down server...")
